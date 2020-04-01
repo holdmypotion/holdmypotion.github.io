@@ -1,0 +1,68 @@
+body {
+    background-color: slategray;
+}
+
+/*Look into the parent div for any sub tag having class named 'error'   */
+div .error {
+    background-color: red;
+}
+
+/* Look for any div with the class named 'error' */
+div.error {
+    background-color: yellow;
+}
+
+/* Look for any p tag with both the classes success and feedback */
+p.success.feedback {
+    background-color: green;
+    border: 4px dashed peachpuff;
+    padding: 20px
+}
+
+.success {
+    background-color: green;
+}
+
+.rahul {
+    border: 4px solid red;
+}
+
+/* tag_name[attribute] this is to select the tag with specific attributes*/
+a[href="https://www.google.com"] {
+    color: peachpuff;
+    font-size: 2em;
+}
+
+/* To style all the a tags the href attribute ending with .pdf */
+a[href$=".pdf"] {
+    color: red;
+    text-transform: uppercase;
+}
+
+/* To style all the a tags with the href attribute that have 'somthing' as a value*/
+
+a[href*="anvil"] {
+    color: white;
+    border: 5px solid burlywood; 
+}
+
+div {
+    border: 5px solid lightcoral;
+    color: orange;
+}
+
+/* This has more precedence over just a p tag  */
+div p {
+    color: peachpuff;
+}
+p {
+    /* to inherit the border, margin, padding etc property */
+    border: inherit;
+    color: black;
+}
+
+h1 {
+    position: relative;
+    left: 100px;
+    top: 100px;
+}
