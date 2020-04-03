@@ -34,11 +34,17 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
     if (gamePlaying) {
         //1. Random Number
         var dice = Math.floor(Math.random()*6) + 1;
+        var diceTwo = Math.floor(Math.random()*6) + 1;
 
         //2. Display the result
+        // Dice 1
         var diceDOM = document.querySelector('.dice');
         diceDOM.style.display = 'block';
         diceDOM.src = 'dice-' + dice + '.png';
+
+        // Dice 2
+        document.querySelector('.second-dice').style.display = 'block';
+        document.querySelector(".second-dice").src = 'dice-' + diceTwo + '.png'; 
 
         //3. Update the round score IF the rolled number ain't 1.
         if (dice === 6 && lastDice === 6) {
@@ -49,7 +55,7 @@ document.querySelector('.btn-roll').addEventListener('click', function() {
         }
         else if(dice !== 1) {
             // add the scores
-            roundScore += dice;
+            roundScore += dice + diceTwo;
             document.querySelector('#current-' + activePlayer).textContent = roundScore;
         } else {
             // Next Player
@@ -85,6 +91,7 @@ document.querySelector('.btn-hold').addEventListener('click', function() {
             document.querySelector('.player-' + activePlayer + '-panel').classList.remove('active');
             document.querySelector('.player-' + activePlayer + '-panel').classList.add('winner');
             document.querySelector('.dice').style.display = 'none';
+            document.querySelector('.second-dice').style.display = 'none';
             gamePlaying = false;
         } else {
             // Next Player
@@ -112,6 +119,7 @@ function nextPlayer() {
     document.querySelector('.player-' + activePlayer + '-panel').classList.toggle('active');
 
     document.querySelector('.dice').style.display = 'none';
+    document.querySelector('.second-dice').style.display = 'none';
 }
 
 
@@ -127,11 +135,12 @@ function init() {
     roundScore = 0;
     activePlayer = 0;
     gamePlaying = true;
-    prevNum = 0;
 
     /* Setting up for round 1 */
     // Changin the dice to none for the first round 
     document.querySelector('.dice').style.display = 'none';
+    document.querySelector('.second-dice').style.display = 'none';
+    document.querySelector('.final-score').value = '';
 
     document.getElementById('score-0').textContent = 0;
     document.getElementById('score-1').textContent = 0;

@@ -145,7 +145,7 @@ i {
     position: absolute;
     left: 50%;
     top: 178px;
-    transform: translateX(-50%);
+    transform: translateX(-110%);
     height: 100px;
     box-shadow: 0px 10px 60px rgba(0, 0, 0, 0.10);
 }
@@ -169,4 +169,13 @@ i {
 
 .final-score:focus {
     outline: none;
+}
+
+.second-dice {
+    position: absolute;
+    transform: translateX(10%);
+    left: 50%;
+    top: 178px;
+    height: 100px;
+    box-shadow: 0px 10px 60px rgba(0, 0, 0, 0.10);
 }
