@@ -1,170 +1,323 @@
-/*
-GAME RULES:
-
-- The game has 2 players, playing in rounds
-- In each turn, a player rolls a dice as many times as he whishes. Each result get added to his 
-    ROUND score
-- BUT, if the player rolls a 1, all his ROUND score gets lost. After that, it's the next player's turn
-- The player can choose to 'Hold', which means that his ROUND score gets added to his GLBAL score. 
-    After that, it's the next player's turn
-- The first player to reach 100 points on GLOBAL score wins the game
-
-*/
-/*
-YOUR 3 CHALLENGES
-Change the game to follow these rules:
-
-1. A player looses his ENTIRE score when he rolls two 6 in a row. After that, it's the next player's turn. 
-(Hint: Always save the previous dice roll in a separate variable)
-2. Add an input field to the HTML where players can set the winning score, so that they can change the predefined score of 100. 
-(Hint: you can read that value with the .value property in JavaScript. This is a good oportunity to use google to figure this out :)
-3. Add another dice to the game, so that there are two dices now. The player looses his current score when one of them is a 1. 
-(Hint: you will need CSS to position the second dice, so take a look at the CSS code for the first one.)
+/**
+ * !Using module patterns.
+ * TODO: Create 3 modules
+ * * These three modules are stand alones. 
+ * * Hence the don't depend on each other 
+ * * This is called seperation of concern.
+ * * Better code struct and easy scalability/debugging/portability
+ * TODO: 1. To control the Budget/data(backend)
+ * TODO: 2. To control the UI(front end)
+ * TODO: 3. To control the interaction between em'(connects front-back)
 */
 
-var score, roundScore, activePlayer, gamePlaying;
+// Understand the concept below and then move to the project.
 
-init();
+//  /**
+//  * *IIFE is very userfull for data privacy 
+//  * *IIFE returns an object containing all the functions that are publically
+//  * *accessible.
+// */
+// var budgetController = (function() {
+//   /**
+//    * *This section has a private scope.
+//    * *IIFE popped off the execution stack but due to the power of closures
+//    * *We can access the inside decalred functions and variables through the
+//    * *publically availabe function.  
+//    */
+//   // Private Scope
+//   ///////////////
+//   var x = 25;
 
-
-var lastDice;
-// Roll Dice Event
-// Here in JS lamda is called as annonymous function.
-document.querySelector('.btn-roll').addEventListener('click', function() {
-    if (gamePlaying) {
-        //1. Random Number
-        var dice = Math.floor(Math.random()*6) + 1;
-        var diceTwo = Math.floor(Math.random()*6) + 1;
-
-        //2. Display the result
-        // Dice 1
-        var diceDOM = document.querySelector('.dice');
-        diceDOM.style.display = 'block';
-        diceDOM.src = 'dice-' + dice + '.png';
-
-        // Dice 2
-        document.querySelector('.second-dice').style.display = 'block';
-        document.querySelector(".second-dice").src = 'dice-' + diceTwo + '.png'; 
-
-        //3. Update the round score IF the rolled number ain't 1.
-        if (dice === 6 && lastDice === 6) {
-            // Player loose score
-            score[activePlayer] = 0;
-            document.getElementById('score-' + activePlayer).textContent = score[activePlayer];
-            nextPlayer();
-        }
-        else if(dice !== 1) {
-            // add the scores
-            roundScore += dice + diceTwo;
-            document.querySelector('#current-' + activePlayer).textContent = roundScore;
-        } else {
-            // Next Player
-            nextPlayer();
-        }
-        lastDice = dice;
-    }
-});
+//   var add = function(a) {
+//       return x + a;
+//   }
+//   //////////////
+//   /**
+//    * *This returns an object containing function.
+//    * *All the function in the return statement are publically accessible
+//    * *just like API's  
+//    * *These functions can access the private data/functions.
+//    */
+//   // Public scope.
+//   return {
+//       publicTest: function(b) {
+//           console.log(add(b));
+//       }
+//   }
+// })();
 
 
-// Hold Event
-document.querySelector('.btn-hold').addEventListener('click', function() {
-    if (gamePlaying) {
-        //1. Update the Global score based on roundScore
-        score[activePlayer] += roundScore;
-        document.getElementById('score-' + activePlayer).textContent = score[activePlayer];
-        
-        // Taking input from the user for the winning score
-        var input = document.querySelector('.final-score').value;
-        var winningScore;
-        // Undefined, 0,. null or "" are COERCED to false
-        // Anything else is coerced to true
-        if(input && input > 0) {
-            winningScore = input;
-        } else {
-            winningScore = 100;
-        }
+// BUDGET CONTROLLER
+var budgetController = (function() {
 
-        //2. check if player won the game
-        if (score[activePlayer] >= winningScore) {
-            // Halt the game and present the winner
-            document.getElementById('name-' + activePlayer).textContent = 'Winner!';
-            document.querySelector('.player-' + activePlayer + '-panel').classList.remove('active');
-            document.querySelector('.player-' + activePlayer + '-panel').classList.add('winner');
-            document.querySelector('.dice').style.display = 'none';
-            document.querySelector('.second-dice').style.display = 'none';
-            gamePlaying = false;
-        } else {
-            // Next Player
-            nextPlayer();
-        }
-    }
-})
+	var Income = function(id, description, value) {
+		this.id = id;
+		this.description = description;
+		this.value = value;
+	};
+
+	var Expense = function(id, description, value) {
+		this.id = id;
+		this.description = description;
+		this.value = value;
+	};
+
+	var data = {
+		allItems: {
+		inc: [],
+		exp: []
+		},
+
+		totals: {
+		inc: 0,
+		exp: 0
+		}, 
+
+		budget: 0,
+
+		percentage: -1
+	}
+
+	var calculateTotal = function(type) {
+		var sum = 0;
+
+		data.allItems[type].forEach(function(cur) {
+			sum += cur.value;
+		});
+
+		data.totals[type] = sum;
+	};
+
+	return {
+		addItem: function(type, des, val) {
+		var newItem, ID;
+
+		// [1, 2, 3, 4], next ID: 6
+		// [1, 2, 4, 6, 8], next ID: 9
+		// ID: lastID + 1
+		if (data.allItems[type].length > 0) {
+			ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
+		} else {
+			ID = 0;
+		}
+
+		// creating a new instance 
+		if (type === 'exp') {
+			newItem = new Expense(ID, des, val);
+		} else if (type === 'inc') {
+			newItem = new Income(ID, des, val);
+		}
+
+		// Storing that instance in our data structure.
+		data.allItems[type].push(newItem);
+
+		// Return the new element for the UI to display
+		return newItem;
+		},
+
+		calculateBudget: function() {
+
+			// calculate total income
+			calculateTotal('inc');
+
+			//calculate total expense
+			calculateTotal('exp');
+
+			//calculate the budget income - expense
+			data.budget = data.totals.inc - data.totals.exp;
+
+			//calculate the percentage
+			if (data.totals.inc > 0) {
+				data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+			}
+		},
+
+		getBudget: function() {
+			return {
+				totalInc: data.totals.inc,
+				totalExp: data.totals.exp,
+				budget: data.budget,
+				percentage: data.percentage
+			};
+		},
+
+		// TODO: Remove this before DEPLOYING.
+		testing: function() {
+			console.log(data);
+		}
+	}
+})();
 
 
-function nextPlayer() {
-    /**
-     * Toggle the activePlayer
-     */
-    prevNum = 0;
-    // Refresh the roundScore
-    document.getElementById('current-' + activePlayer).textContent = '0';
-    roundScore = 0;
+// UI CONTROLLER
+var UIController = (function() {
 
-    // Change the active player and also refresh the dice.
-    // document.querySelector('.player-' + activePlayer + '-panel').classList.remove('active');
-    document.querySelector('.player-' + activePlayer + '-panel').classList.toggle('active');
-    activePlayer === 0 ? activePlayer = 1 : activePlayer = 0; 
+	// All the DOM strings
+	DOMstrings = {
+		inputType: '.add__type',
+		inputDescription: '.add__description',
+		inputValue: '.add__value',
+		inputBtn: '.add__btn',
+		expenseContainer: '.expenses__list',
+		incomeContainer: '.income__list',
+		budgetLabel: '.budget__value',
+		incomeLabel: '.budget__income--value',
+		expenseLabel: '.budget__expenses--value',
+		percentageLabel: '.budget__expenses--percentage',
+	}
+  
+	// Publically accessible methods.
+	return {
 
-    // document.querySelector('.player-' + activePlayer + '-panel').classList.add('active');
-    document.querySelector('.player-' + activePlayer + '-panel').classList.toggle('active');
+		getinput: function() {
 
-    document.querySelector('.dice').style.display = 'none';
-    document.querySelector('.second-dice').style.display = 'none';
-}
+		// This function should return the object containing the data.
+			return {
+				type: document.querySelector(DOMstrings.inputType).value, // inc or exp
+				description: document.querySelector(DOMstrings.inputDescription).value,
+				value: parseFloat(document.querySelector(DOMstrings.inputValue).value)
+			};
+		},
+
+		// Adds the new Item to the UI
+		addListItem: function(obj, type) {
+		var html, newHtml, element;
+
+		// create a html string with placeholder text
+		if (type === 'inc'){
+
+			element = DOMstrings.incomeContainer;
+			html = '<div class="item clearfix" id="income-%id%"> <div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>'
+		} else if (type === 'exp') {
+
+			element = DOMstrings.expenseContainer;
+			html = '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__percentage">21%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>'
+		}
+
+		// replace the placeholder text with actual obj values
+		newHtml = html.replace('%id%', obj.id);
+		newHtml = newHtml.replace('%description%', obj.description);
+		newHtml = newHtml.replace('%value%', obj.value);
+
+		// use insertAdjacentHtml to insert HTML through DOM.
+		document.querySelector(element).insertAdjacentHTML('beforeend', newHtml);
+		},
+
+		clearFields: function() {
+			var fields, fieldsArr;
+			
+			// querySelectorAll returns a list 
+			fields = document.querySelectorAll(DOMstrings.inputDescription +
+						', ' + DOMstrings.inputValue);
+
+			// To convert the list into an array.
+			// Use to call method on the slice method that comes under the Array
+			// prototype
+			fieldsArr = Array.prototype.slice.call(fields);
+
+			// current: current element
+			// index: current index
+			// array: the array that is being processed 
+			fieldsArr.forEach(function(current, index, array) {
+				current.value = ""; 
+			}); 
+
+			fieldsArr[0].focus();
+		},
+		
+		displayBudget: function(obj) {
+			/* Displays the budget to the UI */
+
+			document.querySelector(DOMstrings.budgetLabel).textContent = obj.budget;
+			document.querySelector(DOMstrings.incomeLabel).textContent = obj.totalInc;
+			document.querySelector(DOMstrings.expenseLabel).textContent = obj.totalExp;
+
+			if ( obj.percentage > 0) {
+				document.querySelector(DOMstrings.percentageLabel).textContent = obj.percentage + "%";
+			} else {
+				document.querySelector(DOMstrings.percentageLabel).textContent = "---";
+			}
+		},
+	
+		// This makes the DOMstrings publically accessible.
+		getDOMstrings: function(obj, type) {
+
+		return DOMstrings;
+		}
+	}
+})();
 
 
-// New Game event
-document.querySelector('.btn-new').addEventListener('click', init);
+// GLOBAL APP CONTROLLER
+var controller = (function(budgetCtrl, UICtrl) {
+
+	// Function to set up all the event listeners.
+	var setUpEventListeners = function() {
+		var DOM = UICtrl.getDOMstrings();
+
+		document.querySelector(DOM.inputBtn).addEventListener('click', ctrlAddItem);
+
+		document.addEventListener('keypress', function(event) {
+		if (event.keyCode === 13 || event.which === 13) {
+			ctrlAddItem();
+		}
+		});
+	};
 
 
-function init() {
-    /**
-     * For initializing the game.
-     */
-    score = [0, 0];
-    roundScore = 0;
-    activePlayer = 0;
-    gamePlaying = true;
+	var updateBudget = function() {
 
-    /* Setting up for round 1 */
-    // Changin the dice to none for the first round 
-    document.querySelector('.dice').style.display = 'none';
-    document.querySelector('.second-dice').style.display = 'none';
-    document.querySelector('.final-score').value = '';
+		// TODO: 1. Calculate the budget
+		budgetCtrl.calculateBudget();
 
-    document.getElementById('score-0').textContent = 0;
-    document.getElementById('score-1').textContent = 0;
-    document.getElementById('current-0').textContent = 0;
-    document.getElementById('current-1').textContent = 0;
-    document.getElementById('name-0').textContent = 'Player 1';
-    document.getElementById('name-1').textContent = 'Player 2';
-    document.querySelector('.player-0-panel').classList.remove('winner');
-    document.querySelector('.player-1-panel').classList.remove('winner');
-    document.querySelector('.player-0-panel').classList.remove('active');
-    document.querySelector('.player-1-panel').classList.remove('active');
-    document.querySelector('.player-0-panel').classList.add('active');
-}
+		// TODO: 2. Display the budget
+		budget = budgetCtrl.getBudget();
+
+		// TODO: 3. Display the budget.
+		UICtrl.displayBudget(budget);
+
+	}
 
 
+	var ctrlAddItem = function() {
 
-// We can also change CSS 
-// document.querySelector('.dice').style.display = 'none';
+		var input, newItem;
 
-// dice = Math.floor(Math.random()*6) + 1;
-/* Using them as setters */
-// document.querySelector('#current-' + activePlayer).textContent = dice;
-// In place of .textContent we can also use .innerHTML add HTML code
-// document.querySelector('#current-' + activePlayer).innerHTML = '<B>' + dice + '</B>';
-/**Using them as getters*/ 
-// var x = document.querySelector('#score-' + activePlayer).textContent;
-// console.log(x);
+		// TODO: 1. Get the filed input data from the UI
+		input = UICtrl.getinput();
+
+		if (input.description !== "" && !isNaN(input.value) && input.value !== 0) {
+
+			// TODO: 2. Add the item to the budget controller
+			newItem = budgetCtrl.addItem(input.type, input.description, input.value);
+
+			// TODO: 3. Add the item to UI
+			UICtrl.addListItem(newItem, input.type);
+
+			// TODO: 4. Clear the fields
+			UICtrl.clearFields();
+
+			// TODO: 5. Calculate and update the budget.
+			updateBudget();
+
+		};
+
+	}
+
+	return {
+		init: function() {
+		console.log("The application has started!");
+		UICtrl.displayBudget({
+			totalInc: 0,
+			totalExp: 0,
+			budget: 0,
+			percentage: 0
+		});
+		setUpEventListeners();
+		}
+	}
+
+})(budgetController, UIController);
+
+controller.init();
+
